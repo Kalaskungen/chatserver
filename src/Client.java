@@ -22,6 +22,7 @@ public class Client extends JFrame implements KeyListener, Runnable {
 	JTextField textField = new JTextField();
 	static Socket socket;
 	DataInputStream inStream;// =
+	DataOutputStream outStream;
 
 	public Client() throws IOException {
 		setTitle("Client");
@@ -38,7 +39,7 @@ public class Client extends JFrame implements KeyListener, Runnable {
 
 	private void sendMessage(String message) throws UnknownHostException,
 			IOException {
-		DataOutputStream outStream = new DataOutputStream(
+		outStream = new DataOutputStream(
 				socket.getOutputStream());
 		outStream.writeUTF(message + "\n");
 
@@ -65,14 +66,14 @@ public class Client extends JFrame implements KeyListener, Runnable {
 	}
 
 	private void commandHandler(String input) throws UnknownHostException,
-			IOException {
+	IOException {
 		if (checkCommand(input, "/connect .*")) {
 
 			String tmpAddress = parseCommand(input, "(/connect )");// input.split("(/connect )")[1];
 			connectToServer(tmpAddress);
-		} else if (checkCommand(input, "/disconnect")) {
-
-		} else if (checkCommand(input, "/name \\b\\w*\\b")) {
+		} /*else if (checkCommand(input, "/disconnect")) { 
+			disconnectFromServer();
+		}*/ else if (checkCommand(input, "/name \\b.*\\b")) { //ändrat regex för att tillåta andra chars
 			String tmpName = name;
 			name = parseCommand(input, "(/name )");
 			if (connected) {
@@ -103,9 +104,14 @@ public class Client extends JFrame implements KeyListener, Runnable {
 	}
 
 	private void disconnectFromServer() throws IOException {
-		System.out.println(socket.isClosed());
+		sendMessage(name + " has disconnected");
+		//System.out.println(socket.isClosed());
+		inStream.close();
+		outStream.close();
 		socket.close();
-		System.out.println(socket.isClosed());
+		//System.out.println(socket.isClosed());
+		
+		System.exit(0); //Om man vill stänga klienten vid disconnect
 
 	}
 
