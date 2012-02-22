@@ -56,23 +56,38 @@ public class Client extends JFrame implements KeyListener, Runnable {
 
 	}
 
+	private String parseCommand(String input, String regex) {
+
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(input);
+		m.find();
+		return input.split(regex)[1];
+	}
+
 	private void commandHandler(String input) throws UnknownHostException,
 			IOException {
 		if (checkCommand(input, "/connect .*")) {
-			String tmpAddress = input.split("(/connect )")[1];
+
+			String tmpAddress = parseCommand(input, "(/connect )");// input.split("(/connect )")[1];
 			connectToServer(tmpAddress);
 		} else if (checkCommand(input, "/disconnect")) {
 
 		} else if (checkCommand(input, "/name \\b\\w*\\b")) {
 			String tmpName = name;
-			name = input.split("(/name )")[1];
-			if(connected)
-				sendMessage(tmpName+" is now known as: "+name);
-			else
-			textArea.append("You are now known as: "+name+"\n");
-		} else {
+			name = parseCommand(input, "(/name )");
+			if (connected) {
+				sendMessage(tmpName + " is now known as: " + name);
+			} else {
+				textArea.append("You are now known as: " + name + "\n");
+			}
+
+		} else if (checkCommand(input, "/disconnect")) {
+			disconnectFromServer();
+		}
+
+		else {
 			if (connected)
-				sendMessage(name+"\n  " + input);
+				sendMessage(name + "\n  " + input);
 			else
 				textArea.append("Not connected to a server\n");
 		}
@@ -84,7 +99,14 @@ public class Client extends JFrame implements KeyListener, Runnable {
 		inStream = new DataInputStream(socket.getInputStream());
 		activity.start();
 		connected = true;
-		sendMessage(name+" has connected");
+		sendMessage(name + " has connected");
+	}
+
+	private void disconnectFromServer() throws IOException {
+		System.out.println(socket.isClosed());
+		socket.close();
+		System.out.println(socket.isClosed());
+
 	}
 
 	public static void main(String[] args) throws IOException {
