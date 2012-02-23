@@ -1,6 +1,8 @@
 import java.awt.BorderLayout;
-import java.awt.event.KeyListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+//import java.awt.event.KeyListener;
+//import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,7 +14,7 @@ import java.util.regex.Pattern;
 import javax.swing.*;
 
 @SuppressWarnings("serial")
-public class Client extends JFrame implements KeyListener, Runnable {
+public class Client extends JFrame implements ActionListener, Runnable {
 	private boolean connected = false;
 	public String name = "Unknown";
 	public Client c;
@@ -33,12 +35,12 @@ public class Client extends JFrame implements KeyListener, Runnable {
 		setSize(500, 400);
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		textField.addKeyListener(this);
+		textField.addActionListener(this);
 
 	}
 
 	private void sendMessage(String message) throws UnknownHostException,
-			IOException {
+	IOException {
 		outStream = new DataOutputStream(
 				socket.getOutputStream());
 		outStream.writeUTF(message + "\n");
@@ -73,7 +75,7 @@ public class Client extends JFrame implements KeyListener, Runnable {
 			connectToServer(tmpAddress);
 		} /*else if (checkCommand(input, "/disconnect")) { 
 			disconnectFromServer();
-		}*/ else if (checkCommand(input, "/name \\b.*\\b")) { //ändrat regex för att tillåta andra chars
+		}*/ else if (checkCommand(input, "/name \\b.*\\b")) { 
 			String tmpName = name;
 			name = parseCommand(input, "(/name )");
 			if (connected) {
@@ -120,7 +122,22 @@ public class Client extends JFrame implements KeyListener, Runnable {
 
 	}
 
-	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == textField) {
+			try {
+				commandHandler(textField.getText());
+				textField.setText("");
+			} catch (UnknownHostException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		}
+	}
+	/*@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
 
@@ -150,7 +167,7 @@ public class Client extends JFrame implements KeyListener, Runnable {
 	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
 
-	}
+	}*/
 
 	@Override
 	public void run() {
